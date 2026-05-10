@@ -10,7 +10,7 @@ A living document. Tick off steps as they are completed.
   - Create Xcode project, folder structure, SwiftUI app entry point, `ContentView`
   - *Test:* App launches, shows "Hello Reffect" or empty list placeholder
 
-- [ ] **Step 2 — Data Models & Persistence**
+- [x] **Step 2 — Data Models & Persistence**
   - `Board`, `BoardItem`, `PersistenceManager`. JSON + filesystem. Image helpers.
   - *Test:* Create a board in memory, save, kill app, relaunch — board loads back
 
