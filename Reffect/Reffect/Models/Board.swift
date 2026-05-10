@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct Board: Codable, Identifiable {
+struct Board: Codable, Identifiable, Hashable {
     let id: UUID
     var name: String
     var items: [BoardItem]

@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct BoardItem: Codable, Identifiable {
+struct BoardItem: Codable, Identifiable, Hashable {
     let id: UUID
     var imageSource: String
     var x: Double

@@ -14,7 +14,7 @@ A living document. Tick off steps as they are completed.
   - `Board`, `BoardItem`, `PersistenceManager`. JSON + filesystem. Image helpers.
   - *Test:* Create a board in memory, save, kill app, relaunch — board loads back
 
-- [ ] **Step 3 — AppStore & Board List**
+- [x] **Step 3 — AppStore & Board List**
   - `@Observable AppStore`, inject via environment. `BoardListView`: create, rename (long-press), delete (long-press) boards.
   - *Test:* Create 3 boards, rename one, delete one, relaunch — state persists
 
