@@ -50,7 +50,9 @@ actor PersistenceManager {
         }
         do {
             let data = try Data(contentsOf: boardsURL)
-            let boards = try JSONDecoder().decode([Board].self, from: data)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let boards = try decoder.decode([Board].self, from: data)
             return boards
         } catch {
             print("Failed to load boards: \(error)")
