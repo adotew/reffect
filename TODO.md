@@ -62,14 +62,22 @@ A living document. Tick off steps as they are completed.
   - Two-finger rotate gesture on canvas. Toolbar flip button.
   - *Test:* Two-finger rotate → image rotates. Tap flip button → image mirrors horizontally
 
+- [ ] **Step 12 — Image Filters**
+  - Bottom toolbar with toggle buttons: B&W, Blur, Posterize
+  - Blur: adjustable radius slider (0.5–20) when active
+  - Posterize: adjustable levels slider (0–8) when active
+  - Filters stack: posterize → B&W → blur
+  - Uses Core Image (`CIFilter`) — Metal-backed automatically
+  - *Test:* Tap B&W → image turns grayscale. Tap Blur + adjust slider → image blurs. Tap Posterize + adjust slider → color bands reduce. All filters persist and stack.
+
 ---
 
 ## Phase 5: Performance & Polish
 
-- [ ] **Step 12 — Memory Management**
+- [ ] **Step 13 — Memory Management**
   - Viewport culling (nil images offscreen). `NSCache` (~50MB).
   - *Test:* Add 20 images, zoom in on one, scroll far away → memory stays flat (Instruments or sim memory gauge)
 
-- [ ] **Step 13 — Polish**
+- [ ] **Step 14 — Polish**
   - Error handling, empty states, missing image files, performance tuning.
   - *Test:* Delete image file from disk externally → app shows placeholder, doesn't crash. Empty board shows "Add images" hint.

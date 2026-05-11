@@ -14,6 +14,7 @@ Reffect is an infinite-canvas moodboard / collage app for iOS. It uses **SwiftUI
 | **Canvas** | UIKit (`UIScrollView` + `UIView`) | Infinite pan/zoom canvas. Each image is a real `UIView` subclass (`ItemView`) |
 | **Image Picker** | `PHPickerViewController` | System photo picker for importing images |
 | **Image Processing** | `ImageIO` (`CGImageSourceCreateThumbnailAtIndex`) | Downscales imported images to ~1500px max on a background queue. Memory-efficient streaming decode. |
+| **Image Filters** | Core Image (`CIFilter`) | B&W (`CIPhotoEffectNoir`), blur (`CIGaussianBlur`), posterize (`CIColorPosterize`). Metal-backed automatically. |
 | **Persistence** | JSON (`JSONEncoder/Decoder`) + Filesystem | `boards.json` stores board metadata; images saved as individual JPEGs in app documents |
 | **State Management** | `@Observable` (Observation framework) | `AppStore` is the single source of truth, injected via SwiftUI environment |
 | **Language** | Swift | 100% Swift |
@@ -90,7 +91,12 @@ BoardItem
 ├── width, height: Double
 ├── scale: Double
 ├── rotation: Double     (radians)
-└── flipHorizontal: Bool
+├── flipHorizontal: Bool
+├── isBlackAndWhite: Bool
+├── isBlurred: Bool
+├── blurRadius: Double
+├── isPosterized: Bool
+└── posterizationLevels: Double
 ```
 
 ---
@@ -114,3 +120,12 @@ An earlier version used `MTKView` + custom Metal shaders for rendering images, d
 - **Gesture state machines**: Custom `GestureMode` enum + 4 gesture recognizers with fragile `shouldRecognizeSimultaneouslyWith` logic.
 
 Switching to UIKit eliminated all of those bugs and reduced the canvas code by ~60%.
+
+## Why Not Metal for Filters?
+
+Core Image is the right choice for image filters because:
+
+- **Metal-backed automatically**: `CIFilter` compiles to optimized Metal kernels under the hood on iOS 13+. You get Metal performance without writing Metal code.
+- **Standard filters available**: B&W (`CIPhotoEffectNoir`), blur (`CIGaussianBlur`), and posterize (`CIColorPosterize`) are built-in. No custom shader code needed.
+- **Chainable**: Apply posterize → B&W → blur in a single `CIImage` pipeline.
+- **Works with `UIImageView`**: Set `UIImageView.image = UIImage(ciImage: ...)` or use a `CIImage`-backed `UIImage`. The canvas architecture stays unchanged.
