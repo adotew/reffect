@@ -9,10 +9,14 @@ final class ItemView: UIView {
     let item: BoardItem
     private let imageView = UIImageView()
     private var selectionOverlay: SelectionOverlayView?
+    private var panStartCenter: CGPoint = .zero
+
+    var onPositionChanged: ((Double, Double) -> Void)?
 
     var isSelected: Bool = false {
         didSet {
             guard isSelected != oldValue else { return }
+            isUserInteractionEnabled = isSelected
             if isSelected {
                 showSelectionOverlay()
                 superview?.bringSubviewToFront(self)
@@ -56,6 +60,9 @@ final class ItemView: UIView {
         layer.shadowRadius = 4
 
         loadImage()
+
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+        addGestureRecognizer(pan)
     }
 
     private func loadImage() {
@@ -64,6 +71,25 @@ final class ItemView: UIView {
             imageView.image = image
         } else {
             imageView.backgroundColor = .systemGray5
+        }
+    }
+
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            panStartCenter = center
+        case .changed:
+            let translation = gesture.translation(in: superview)
+            center = CGPoint(
+                x: panStartCenter.x + translation.x,
+                y: panStartCenter.y + translation.y
+            )
+        case .ended, .cancelled:
+            let newX = Double(center.x - BoardCanvasView.canvasHalf)
+            let newY = Double(center.y - BoardCanvasView.canvasHalf)
+            onPositionChanged?(newX, newY)
+        default:
+            break
         }
     }
 

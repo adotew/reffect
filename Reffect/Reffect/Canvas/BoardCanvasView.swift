@@ -13,7 +13,6 @@ final class BoardCanvasView: UIScrollView {
     private var didSetInitialOffset = false
     private var isRestoringViewport = false
     private var currentItems: [BoardItem] = []
-    private var panStartCenter: CGPoint = .zero
 
     var onViewportChange: ((CGPoint, CGFloat) -> Void)?
     var onItemPositionChanged: ((UUID, Double, Double) -> Void)?
@@ -58,10 +57,6 @@ final class BoardCanvasView: UIScrollView {
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         contentContainerView.addGestureRecognizer(tap)
-
-        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
-        pan.delegate = self
-        contentContainerView.addGestureRecognizer(pan)
     }
 
     func setItems(_ items: [BoardItem]) {
@@ -76,6 +71,9 @@ final class BoardCanvasView: UIScrollView {
 
         for item in items {
             let itemView = ItemView(item: item)
+            itemView.onPositionChanged = { [weak self] x, y in
+                self?.onItemPositionChanged?(item.id, x, y)
+            }
             contentContainerView.addSubview(itemView)
         }
 
@@ -86,7 +84,8 @@ final class BoardCanvasView: UIScrollView {
     private func updateSelectionState() {
         for subview in contentContainerView.subviews {
             guard let itemView = subview as? ItemView else { continue }
-            itemView.isSelected = (itemView.item.id == selectedItemID)
+            let isItemSelected = (itemView.item.id == selectedItemID)
+            itemView.isSelected = isItemSelected
         }
     }
 
@@ -97,30 +96,6 @@ final class BoardCanvasView: UIScrollView {
             selectedItemID = tappedItemView.item.id
         } else {
             selectedItemID = nil
-        }
-    }
-
-    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
-        guard let selectedID = selectedItemID,
-              let itemView = contentContainerView.subviews
-                  .compactMap({ $0 as? ItemView })
-                  .first(where: { $0.item.id == selectedID }) else { return }
-
-        switch gesture.state {
-        case .began:
-            panStartCenter = itemView.center
-        case .changed:
-            let translation = gesture.translation(in: contentContainerView)
-            itemView.center = CGPoint(
-                x: panStartCenter.x + translation.x,
-                y: panStartCenter.y + translation.y
-            )
-        case .ended, .cancelled:
-            let newX = Double(itemView.center.x - Self.canvasHalf)
-            let newY = Double(itemView.center.y - Self.canvasHalf)
-            onItemPositionChanged?(selectedID, newX, newY)
-        default:
-            break
         }
     }
 
@@ -171,18 +146,5 @@ extension BoardCanvasView: UIScrollViewDelegate {
 
     private func notifyViewportChange() {
         onViewportChange?(contentOffset, zoomScale)
-    }
-}
-
-extension BoardCanvasView: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        if gestureRecognizer is UIPanGestureRecognizer {
-            return selectedItemID != nil
-        }
-        return true
-    }
-
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return false
     }
 }
