@@ -9,17 +9,9 @@ struct CanvasView: View {
     let board: Board
 
     var body: some View {
-        VStack {
-            Text(board.name)
-                .font(.title)
-                .padding()
-            Spacer()
-            Text("Canvas placeholder — Step 4")
-                .foregroundStyle(.secondary)
-            Spacer()
-        }
-        .navigationTitle(board.name)
-        .navigationBarTitleDisplayMode(.inline)
+        BoardCanvas(board: board)
+            .navigationTitle(board.name)
+            .navigationBarTitleDisplayMode(.inline)
     }
 }
 

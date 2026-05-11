@@ -22,7 +22,7 @@ A living document. Tick off steps as they are completed.
 
 ## Phase 2: Canvas Shell
 
-- [ ] **Step 4 — Empty Infinite Canvas**
+- [x] **Step 4 — Empty Infinite Canvas**
   - `BoardCanvas` (UIViewRepresentable), `BoardCanvasView` (UIScrollView). 7000×7000 content view, centered origin. Pinch zoom + pan.
   - *Test:* Tap a board → canvas opens. Can pinch zoom and pan freely
 
