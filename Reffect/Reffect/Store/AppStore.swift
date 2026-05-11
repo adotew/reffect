@@ -54,6 +54,56 @@ class AppStore {
         return item
     }
 
+    func updateItemPosition(boardId: UUID, itemId: UUID, x: Double, y: Double) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let itemIndex = board.items.firstIndex(where: { $0.id == itemId }) {
+                board.items[itemIndex].x = x
+                board.items[itemIndex].y = y
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
+    func deleteItem(boardId: UUID, itemId: UUID) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            board.items.removeAll(where: { $0.id == itemId })
+            board.lastModified = Date()
+            boards[boardIndex] = board
+            saveBoards()
+        }
+    }
+
+    func duplicateItem(boardId: UUID, itemId: UUID) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let item = board.items.first(where: { $0.id == itemId }) {
+                let copy = BoardItem(
+                    imageSource: item.imageSource,
+                    x: item.x + 20,
+                    y: item.y + 20,
+                    width: item.width,
+                    height: item.height,
+                    scale: item.scale,
+                    rotation: item.rotation,
+                    flipHorizontal: item.flipHorizontal,
+                    isBlackAndWhite: item.isBlackAndWhite,
+                    isBlurred: item.isBlurred,
+                    blurRadius: item.blurRadius,
+                    isPosterized: item.isPosterized,
+                    posterizationLevels: item.posterizationLevels
+                )
+                board.items.append(copy)
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
     func updateViewport(id: UUID, translateX: Double, translateY: Double, scale: Double) {
         if let index = boards.firstIndex(where: { $0.id == id }) {
             boards[index].viewportTranslateX = translateX

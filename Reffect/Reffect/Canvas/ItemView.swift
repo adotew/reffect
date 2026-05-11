@@ -9,8 +9,10 @@ final class ItemView: UIView {
     let item: BoardItem
     private let imageView = UIImageView()
     private var selectionOverlay: SelectionOverlayView?
+    private var panStartCenter: CGPoint = .zero
 
     var onSelect: (() -> Void)?
+    var onPositionChanged: ((Double, Double) -> Void)?
 
     var isSelected: Bool = false {
         didSet {
@@ -60,6 +62,9 @@ final class ItemView: UIView {
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         addGestureRecognizer(tap)
+
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+        addGestureRecognizer(pan)
     }
 
     private func loadImage() {
@@ -73,6 +78,26 @@ final class ItemView: UIView {
 
     @objc private func handleTap() {
         onSelect?()
+    }
+
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            panStartCenter = center
+            onSelect?()
+        case .changed:
+            let translation = gesture.translation(in: superview)
+            center = CGPoint(
+                x: panStartCenter.x + translation.x,
+                y: panStartCenter.y + translation.y
+            )
+        case .ended, .cancelled:
+            let newX = Double(center.x - BoardCanvasView.canvasHalf)
+            let newY = Double(center.y - BoardCanvasView.canvasHalf)
+            onPositionChanged?(newX, newY)
+        default:
+            break
+        }
     }
 
     private func showSelectionOverlay() {

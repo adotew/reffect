@@ -10,6 +10,7 @@ struct CanvasView: View {
     @Environment(AppStore.self) private var store
     @State private var isImporting = false
     @State private var importResult: ImportResult?
+    @State private var selectedItemID: UUID?
 
     private var liveBoard: Board {
         store.boards.first(where: { $0.id == board.id }) ?? board
@@ -25,6 +26,14 @@ struct CanvasView: View {
                     translateY: translateY,
                     scale: scale
                 )
+            },
+            onItemPositionChanged: { itemID, x, y in
+                store.updateItemPosition(
+                    boardId: board.id,
+                    itemId: itemID,
+                    x: x,
+                    y: y
+                )
             }
         )
         .navigationTitle(liveBoard.name)
@@ -35,6 +44,31 @@ struct CanvasView: View {
                     isImporting = true
                 } label: {
                     Image(systemName: "photo.badge.plus")
+                }
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        if let itemID = selectedItemID {
+                            store.duplicateItem(boardId: board.id, itemId: itemID)
+                        }
+                    } label: {
+                        Label("Duplicate", systemImage: "doc.on.doc")
+                    }
+                    .disabled(selectedItemID == nil)
+
+                    Button(role: .destructive) {
+                        if let itemID = selectedItemID {
+                            store.deleteItem(boardId: board.id, itemId: itemID)
+                            selectedItemID = nil
+                        }
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    .disabled(selectedItemID == nil)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
             }
         }

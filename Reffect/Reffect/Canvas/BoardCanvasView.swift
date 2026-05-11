@@ -15,6 +15,7 @@ final class BoardCanvasView: UIScrollView {
     private var currentItems: [BoardItem] = []
 
     var onViewportChange: ((CGPoint, CGFloat) -> Void)?
+    var onItemPositionChanged: ((UUID, Double, Double) -> Void)?
     var initialViewport: (translateX: Double, translateY: Double, scale: Double)?
 
     var selectedItemID: UUID? {
@@ -73,6 +74,9 @@ final class BoardCanvasView: UIScrollView {
             let itemView = ItemView(item: item)
             itemView.onSelect = { [weak self] in
                 self?.selectedItemID = item.id
+            }
+            itemView.onPositionChanged = { [weak self] x, y in
+                self?.onItemPositionChanged?(item.id, x, y)
             }
             contentContainerView.addSubview(itemView)
         }

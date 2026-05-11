@@ -50,7 +50,7 @@ A living document. Tick off steps as they are completed.
   - Tap `ItemView` to select (blue border + 4 handles). Tap canvas to deselect. Bring to front.
   - *Test:* Tap image → blue border + handles appear. Tap empty canvas → deselects
 
-- [ ] **Step 9 — Move & Delete**
+- [x] **Step 9 — Move & Delete**
   - Pan `ItemView` to move. Toolbar "..." menu → Delete and Duplicate actions.
   - *Test:* Drag image to new position. Delete via menu → gone. Duplicate → copy appears offset
 
