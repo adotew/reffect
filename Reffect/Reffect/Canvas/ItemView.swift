@@ -58,11 +58,6 @@ final class ItemView: UIView {
         imageView.clipsToBounds = true
         addSubview(imageView)
 
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOpacity = 0.15
-        layer.shadowOffset = CGSize(width: 0, height: 2)
-        layer.shadowRadius = 4
-
         loadImage()
 
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
@@ -76,6 +71,25 @@ final class ItemView: UIView {
         } else {
             imageView.backgroundColor = .systemGray5
         }
+    }
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        if isSelected {
+            if bounds.contains(point) { return true }
+            let threshold: CGFloat = 32
+            let corners = [
+                CGPoint(x: imageRect.minX, y: imageRect.minY),
+                CGPoint(x: imageRect.maxX, y: imageRect.minY),
+                CGPoint(x: imageRect.minX, y: imageRect.maxY),
+                CGPoint(x: imageRect.maxX, y: imageRect.maxY),
+            ]
+            for corner in corners {
+                if hypot(point.x - corner.x, point.y - corner.y) <= threshold {
+                    return true
+                }
+            }
+        }
+        return super.point(inside: point, with: event)
     }
 
     @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
@@ -97,10 +111,29 @@ final class ItemView: UIView {
         }
     }
 
+    private var imageRect: CGRect {
+        guard let image = imageView.image, image.size.width > 0, image.size.height > 0 else {
+            return bounds
+        }
+        let viewSize = bounds.size
+        let imageSize = image.size
+        let imageAspect = imageSize.width / imageSize.height
+        let viewAspect = viewSize.width / viewSize.height
+        var rect: CGRect
+        if imageAspect > viewAspect {
+            let height = viewSize.width / imageAspect
+            rect = CGRect(x: 0, y: (viewSize.height - height) / 2, width: viewSize.width, height: height)
+        } else {
+            let width = viewSize.height * imageAspect
+            rect = CGRect(x: (viewSize.width - width) / 2, y: 0, width: width, height: viewSize.height)
+        }
+        return rect
+    }
+
     private func showSelectionOverlay() {
         guard selectionOverlay == nil else { return }
-        let overlay = SelectionOverlayView(frame: bounds)
-        overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        let overlay = SelectionOverlayView(frame: imageRect)
+        overlay.autoresizingMask = []
         overlay.onHandlePan = { [weak self] position, gesture in
             self?.handleResize(from: position, gesture: gesture)
         }
@@ -154,6 +187,14 @@ final class ItemView: UIView {
                 x: resizeAnchor.x + signX * newWidth / 2,
                 y: resizeAnchor.y + signY * newHeight / 2
             )
+
+            imageView.frame = bounds
+
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            selectionOverlay?.frame = imageRect
+            selectionOverlay?.layoutIfNeeded()
+            CATransaction.commit()
         case .ended, .cancelled:
             let newX = Double(center.x - BoardCanvasView.canvasHalf)
             let newY = Double(center.y - BoardCanvasView.canvasHalf)

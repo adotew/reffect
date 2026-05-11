@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import ImageIO
 import Observation
 
 @Observable
@@ -43,7 +44,21 @@ class AppStore {
     }
 
     func addImage(to boardId: UUID, filename: String) -> BoardItem {
-        let item = BoardItem(imageSource: filename)
+        let url = PersistenceManager.shared.imageURL(for: filename)
+        var naturalWidth: CGFloat = 200
+        var naturalHeight: CGFloat = 200
+        if let source = CGImageSourceCreateWithURL(url as CFURL, nil) {
+            let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+            if let w = props?[kCGImagePropertyPixelWidth] as? CGFloat,
+               let h = props?[kCGImagePropertyPixelHeight] as? CGFloat,
+               w > 0, h > 0 {
+                let maxDim: CGFloat = 200
+                let scale = min(maxDim / w, maxDim / h)
+                naturalWidth = w * scale
+                naturalHeight = h * scale
+            }
+        }
+        let item = BoardItem(imageSource: filename, width: Double(naturalWidth), height: Double(naturalHeight))
         if let index = boards.firstIndex(where: { $0.id == boardId }) {
             var board = boards[index]
             board.items.append(item)

@@ -54,6 +54,16 @@ final class SelectionOverlayView: UIView {
         onHandlePan?(position, gesture)
     }
 
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        for subview in subviews.reversed() {
+            let converted = subview.convert(point, from: self)
+            if let hit = subview.hitTest(converted, with: event) {
+                return hit
+            }
+        }
+        return nil
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         borderLayer.frame = bounds

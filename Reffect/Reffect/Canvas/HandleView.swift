@@ -26,4 +26,10 @@ final class HandleView: UIView {
         layer.shadowOffset = CGSize(width: 0, height: 1)
         layer.shadowRadius = 2
     }
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let hitTestInset: CGFloat = 26
+        let hitRect = bounds.insetBy(dx: -hitTestInset, dy: -hitTestInset)
+        return hitRect.contains(point)
+    }
 }

@@ -58,8 +58,8 @@ A living document. Tick off steps as they are completed.
   - `HandleView` corners. Pan handle = resize, aspect-locked, rotation-aware. Handle size scales inversely with zoom.
   - *Test:* Drag corner handle → image resizes, aspect ratio preserved
 
-- [ ] **Step 11 — Rotate & Flip**
-  - Two-finger rotate gesture on canvas. Toolbar flip button.
+- [ ] **Step 11 — Flip**
+  - Toolbar flip button.
   - *Test:* Two-finger rotate → image rotates. Tap flip button → image mirrors horizontally
 
 - [ ] **Step 12 — Image Filters**
