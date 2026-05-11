@@ -11,9 +11,13 @@ struct CanvasView: View {
     @State private var isImporting = false
     @State private var importResult: ImportResult?
 
+    private var liveBoard: Board {
+        store.boards.first(where: { $0.id == board.id }) ?? board
+    }
+
     var body: some View {
         BoardCanvas(
-            board: board,
+            board: liveBoard,
             onViewportChange: { translateX, translateY, scale in
                 store.updateViewport(
                     id: board.id,
@@ -23,7 +27,7 @@ struct CanvasView: View {
                 )
             }
         )
-        .navigationTitle(board.name)
+        .navigationTitle(liveBoard.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

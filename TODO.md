@@ -38,7 +38,7 @@ A living document. Tick off steps as they are completed.
   - `PHPickerViewController` wrapper. ImageIO downsampling to ~1500px. Save JPEG.
   - *Test:* Import an image → file appears in app documents directory, ≤1500px
 
-- [ ] **Step 7 — Place Images on Canvas**
+- [x] **Step 7 — Place Images on Canvas**
   - `ItemView` with `UIImageView`. Load from disk, position at (0,0). Display on canvas.
   - *Test:* Import image → appears on canvas. Can import multiple, all visible
 

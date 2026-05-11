@@ -74,7 +74,7 @@ actor PersistenceManager {
         }
     }
 
-    func imageURL(for filename: String) -> URL {
+    nonisolated func imageURL(for filename: String) -> URL {
         imagesDirectoryURL.appendingPathComponent(filename)
     }
 

@@ -19,11 +19,12 @@ struct BoardCanvas: UIViewRepresentable {
                 scale: Double(scale)
             )
         }
+        view.setItems(board.items)
         return view
     }
 
     func updateUIView(_ uiView: BoardCanvasView, context: Context) {
-        // No dynamic updates needed beyond initial setup
+        uiView.setItems(board.items)
     }
 
     func makeCoordinator() -> Coordinator {

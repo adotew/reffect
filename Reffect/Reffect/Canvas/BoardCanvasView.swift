@@ -12,6 +12,7 @@ final class BoardCanvasView: UIScrollView {
     private let contentContainerView = UIView()
     private var didSetInitialOffset = false
     private var isRestoringViewport = false
+    private var currentItems: [BoardItem] = []
 
     var onViewportChange: ((CGPoint, CGFloat) -> Void)?
     var initialViewport: (translateX: Double, translateY: Double, scale: Double)?
@@ -50,6 +51,24 @@ final class BoardCanvasView: UIScrollView {
 
         let patternImage = createGridPatternImage()
         contentContainerView.backgroundColor = UIColor(patternImage: patternImage)
+    }
+
+    func setItems(_ items: [BoardItem]) {
+        let newIDs = Set(items.map(\.id))
+        let currentIDs = Set(currentItems.map(\.id))
+
+        guard newIDs != currentIDs else { return }
+
+        contentContainerView.subviews
+            .compactMap { $0 as? ItemView }
+            .forEach { $0.removeFromSuperview() }
+
+        for item in items {
+            let itemView = ItemView(item: item)
+            contentContainerView.addSubview(itemView)
+        }
+
+        currentItems = items
     }
 
     private func createGridPatternImage() -> UIImage {
