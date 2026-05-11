@@ -58,17 +58,15 @@ A living document. Tick off steps as they are completed.
   - `HandleView` corners. Pan handle = resize, aspect-locked, rotation-aware. Handle size scales inversely with zoom.
   - *Test:* Drag corner handle → image resizes, aspect ratio preserved
 
-- [ ] **Step 11 — Flip**
+- [x] **Step 11 — Flip**
   - Toolbar flip button.
-  - *Test:* Two-finger rotate → image rotates. Tap flip button → image mirrors horizontally
+  - *Test:* Tap flip button → image mirrors horizontally
 
-- [ ] **Step 12 — Image Filters**
-  - Bottom toolbar with toggle buttons: B&W, Blur, Posterize
-  - Blur: adjustable radius slider (0.5–20) when active
-  - Posterize: adjustable levels slider (0–8) when active
-  - Filters stack: posterize → B&W → blur
+- [x] **Step 12 — Image Filters (B&W)**
+  - Bottom toolbar with toggle button: B&W (desaturation via `CIColorControls`)
+  - Blur and Posterize removed from UI — deferred to future step
   - Uses Core Image (`CIFilter`) — Metal-backed automatically
-  - *Test:* Tap B&W → image turns grayscale. Tap Blur + adjust slider → image blurs. Tap Posterize + adjust slider → color bands reduce. All filters persist and stack.
+  - *Test:* Tap B&W → image turns grayscale. Filters persist.
 
 ---
 

@@ -17,6 +17,7 @@ final class BoardCanvasView: UIScrollView {
     var onViewportChange: ((CGPoint, CGFloat) -> Void)?
     var onItemPositionChanged: ((UUID, Double, Double) -> Void)?
     var onItemSizeChanged: ((UUID, Double, Double, Double, Double) -> Void)?
+    var onSelectionChanged: ((UUID?) -> Void)?
     var initialViewport: (translateX: Double, translateY: Double, scale: Double)?
 
     var selectedItemID: UUID? {
@@ -64,25 +65,49 @@ final class BoardCanvasView: UIScrollView {
         let newIDs = Set(items.map(\.id))
         let currentIDs = Set(currentItems.map(\.id))
 
-        guard newIDs != currentIDs else { return }
+        if newIDs == currentIDs {
+            // Only properties may have changed; update existing views
+            for item in items {
+                guard let view = itemView(for: item.id) else { continue }
+                view.configure(with: item)
+            }
+            currentItems = items
+            return
+        }
 
+        // Remove deleted
         contentContainerView.subviews
             .compactMap { $0 as? ItemView }
+            .filter { !newIDs.contains($0.item.id) }
             .forEach { $0.removeFromSuperview() }
 
+        // Update existing and add new
         for item in items {
-            let itemView = ItemView(item: item)
-            itemView.onPositionChanged = { [weak self] x, y in
-                self?.onItemPositionChanged?(item.id, x, y)
+            if let view = itemView(for: item.id) {
+                view.configure(with: item)
+            } else {
+                let itemView = ItemView(item: item)
+                itemView.onPositionChanged = { [weak self] x, y in
+                    self?.onItemPositionChanged?(item.id, x, y)
+                }
+                itemView.onSizeChanged = { [weak self] width, height, x, y in
+                    self?.onItemSizeChanged?(item.id, width, height, x, y)
+                }
+                contentContainerView.addSubview(itemView)
             }
-            itemView.onSizeChanged = { [weak self] width, height, x, y in
-                self?.onItemSizeChanged?(item.id, width, height, x, y)
-            }
-            contentContainerView.addSubview(itemView)
         }
 
         currentItems = items
         updateSelectionState()
+    }
+
+    private func itemView(for id: UUID) -> ItemView? {
+        for subview in contentContainerView.subviews {
+            if let itemView = subview as? ItemView, itemView.item.id == id {
+                return itemView
+            }
+        }
+        return nil
     }
 
     private func updateSelectionState() {
@@ -101,6 +126,7 @@ final class BoardCanvasView: UIScrollView {
         } else {
             selectedItemID = nil
         }
+        onSelectionChanged?(selectedItemID)
     }
 
     private func itemView(at point: CGPoint) -> ItemView? {

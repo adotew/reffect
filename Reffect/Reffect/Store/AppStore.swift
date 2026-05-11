@@ -144,6 +144,80 @@ class AppStore {
         }
     }
 
+    // MARK: - Image Transformations
+
+    func toggleItemFlip(boardId: UUID, itemId: UUID) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let itemIndex = board.items.firstIndex(where: { $0.id == itemId }) {
+                board.items[itemIndex].flipHorizontal.toggle()
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
+    func toggleItemBlackAndWhite(boardId: UUID, itemId: UUID) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let itemIndex = board.items.firstIndex(where: { $0.id == itemId }) {
+                board.items[itemIndex].isBlackAndWhite.toggle()
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
+    func toggleItemBlur(boardId: UUID, itemId: UUID) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let itemIndex = board.items.firstIndex(where: { $0.id == itemId }) {
+                board.items[itemIndex].isBlurred.toggle()
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
+    func setItemBlurRadius(boardId: UUID, itemId: UUID, radius: Double) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let itemIndex = board.items.firstIndex(where: { $0.id == itemId }) {
+                board.items[itemIndex].blurRadius = radius
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
+    func toggleItemPosterize(boardId: UUID, itemId: UUID) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let itemIndex = board.items.firstIndex(where: { $0.id == itemId }) {
+                board.items[itemIndex].isPosterized.toggle()
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
+    func setItemPosterizationLevels(boardId: UUID, itemId: UUID, levels: Double) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let itemIndex = board.items.firstIndex(where: { $0.id == itemId }) {
+                board.items[itemIndex].posterizationLevels = levels
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
     private func saveBoards() {
         Task {
             try? await persistence.saveBoards(boards)

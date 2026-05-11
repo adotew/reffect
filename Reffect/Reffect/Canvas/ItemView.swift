@@ -4,15 +4,19 @@
 //
 
 import UIKit
+import CoreImage
 
 final class ItemView: UIView {
-    let item: BoardItem
+    private(set) var item: BoardItem
     private let imageView = UIImageView()
     private var selectionOverlay: SelectionOverlayView?
+    private var originalImage: UIImage?
     private var panStartCenter: CGPoint = .zero
     private var resizeAnchor: CGPoint = .zero
     private var resizeOriginalSize: CGSize = .zero
     private var resizeStartDistance: CGFloat = 0
+
+    private static let ciContext = CIContext(options: nil)
 
     var onPositionChanged: ((Double, Double) -> Void)?
     var onSizeChanged: ((Double, Double, Double, Double) -> Void)?
@@ -38,6 +42,37 @@ final class ItemView: UIView {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(with newItem: BoardItem) {
+        let filtersChanged =
+            item.isBlackAndWhite != newItem.isBlackAndWhite ||
+            item.flipHorizontal != newItem.flipHorizontal
+
+        let frameChanged =
+            item.x != newItem.x ||
+            item.y != newItem.y ||
+            item.width != newItem.width ||
+            item.height != newItem.height
+
+        item = newItem
+
+        if frameChanged {
+            let size = CGSize(width: item.width, height: item.height)
+            bounds.size = size
+            center = CGPoint(
+                x: BoardCanvasView.canvasHalf + item.x,
+                y: BoardCanvasView.canvasHalf + item.y
+            )
+            imageView.frame = bounds
+            selectionOverlay?.frame = imageRect
+        }
+
+        updateFlipTransform()
+
+        if filtersChanged {
+            applyFilters()
+        }
     }
 
     private func setup() {
@@ -67,29 +102,45 @@ final class ItemView: UIView {
     private func loadImage() {
         let url = PersistenceManager.shared.imageURL(for: item.imageSource)
         if let image = UIImage(contentsOfFile: url.path) {
-            imageView.image = image
+            originalImage = image
+            applyFilters()
         } else {
             imageView.backgroundColor = .systemGray5
         }
     }
 
-    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-        if isSelected {
-            if bounds.contains(point) { return true }
-            let threshold: CGFloat = 32
-            let corners = [
-                CGPoint(x: imageRect.minX, y: imageRect.minY),
-                CGPoint(x: imageRect.maxX, y: imageRect.minY),
-                CGPoint(x: imageRect.minX, y: imageRect.maxY),
-                CGPoint(x: imageRect.maxX, y: imageRect.maxY),
-            ]
-            for corner in corners {
-                if hypot(point.x - corner.x, point.y - corner.y) <= threshold {
-                    return true
+    private func applyFilters() {
+        guard let source = originalImage else { return }
+        guard let cgImage = source.cgImage else {
+            imageView.image = source
+            return
+        }
+
+        var ciImage = CIImage(cgImage: cgImage)
+
+        if item.isBlackAndWhite {
+            if let filter = CIFilter(name: "CIColorControls") {
+                filter.setValue(ciImage, forKey: kCIInputImageKey)
+                filter.setValue(0.0, forKey: kCIInputSaturationKey)
+                if let output = filter.outputImage {
+                    ciImage = output
                 }
             }
         }
-        return super.point(inside: point, with: event)
+
+        if let outputCGImage = ItemView.ciContext.createCGImage(ciImage, from: ciImage.extent) {
+            imageView.image = UIImage(cgImage: outputCGImage, scale: source.scale, orientation: source.imageOrientation)
+        } else {
+            imageView.image = source
+        }
+    }
+
+    private func updateFlipTransform() {
+        if item.flipHorizontal {
+            imageView.transform = CGAffineTransform(scaleX: -1, y: 1)
+        } else {
+            imageView.transform = .identity
+        }
     }
 
     @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
@@ -218,5 +269,24 @@ final class ItemView: UIView {
         case .topLeft, .topRight: return -bounds.height / 2
         case .bottomLeft, .bottomRight: return bounds.height / 2
         }
+    }
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        if isSelected {
+            if bounds.contains(point) { return true }
+            let threshold: CGFloat = 32
+            let corners = [
+                CGPoint(x: imageRect.minX, y: imageRect.minY),
+                CGPoint(x: imageRect.maxX, y: imageRect.minY),
+                CGPoint(x: imageRect.minX, y: imageRect.maxY),
+                CGPoint(x: imageRect.maxX, y: imageRect.maxY),
+            ]
+            for corner in corners {
+                if hypot(point.x - corner.x, point.y - corner.y) <= threshold {
+                    return true
+                }
+            }
+        }
+        return super.point(inside: point, with: event)
     }
 }

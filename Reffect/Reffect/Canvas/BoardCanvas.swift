@@ -7,6 +7,7 @@ import SwiftUI
 
 struct BoardCanvas: UIViewRepresentable {
     let board: Board
+    @Binding var selectedItemID: UUID?
     let onViewportChange: (Double, Double, Double) -> Void
     let onItemPositionChanged: (UUID, Double, Double) -> Void
     let onItemSizeChanged: (UUID, Double, Double, Double, Double) -> Void
@@ -29,6 +30,9 @@ struct BoardCanvas: UIViewRepresentable {
         scrollView.onItemSizeChanged = { itemID, width, height, x, y in
             context.coordinator.handleItemSizeChanged(itemID: itemID, width: width, height: height, x: x, y: y)
         }
+        scrollView.onSelectionChanged = { itemID in
+            context.coordinator.handleSelectionChanged(itemID: itemID)
+        }
         scrollView.setItems(board.items)
 
         return container
@@ -36,10 +40,14 @@ struct BoardCanvas: UIViewRepresentable {
 
     func updateUIView(_ uiView: BoardCanvasContainer, context: Context) {
         uiView.scrollView.setItems(board.items)
+        if uiView.scrollView.selectedItemID != selectedItemID {
+            uiView.scrollView.selectedItemID = selectedItemID
+        }
     }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(
+            selectedItemID: $selectedItemID,
             onViewportChange: onViewportChange,
             onItemPositionChanged: onItemPositionChanged,
             onItemSizeChanged: onItemSizeChanged
@@ -47,6 +55,7 @@ struct BoardCanvas: UIViewRepresentable {
     }
 
     class Coordinator {
+        @Binding var selectedItemID: UUID?
         private let onViewportChange: (Double, Double, Double) -> Void
         private let onItemPositionChanged: (UUID, Double, Double) -> Void
         private let onItemSizeChanged: (UUID, Double, Double, Double, Double) -> Void
@@ -54,10 +63,12 @@ struct BoardCanvas: UIViewRepresentable {
         private let debounceInterval: TimeInterval = 0.8
 
         init(
+            selectedItemID: Binding<UUID?>,
             onViewportChange: @escaping (Double, Double, Double) -> Void,
             onItemPositionChanged: @escaping (UUID, Double, Double) -> Void,
             onItemSizeChanged: @escaping (UUID, Double, Double, Double, Double) -> Void
         ) {
+            self._selectedItemID = selectedItemID
             self.onViewportChange = onViewportChange
             self.onItemPositionChanged = onItemPositionChanged
             self.onItemSizeChanged = onItemSizeChanged
@@ -78,6 +89,10 @@ struct BoardCanvas: UIViewRepresentable {
 
         func handleItemSizeChanged(itemID: UUID, width: Double, height: Double, x: Double, y: Double) {
             onItemSizeChanged(itemID, width, height, x, y)
+        }
+
+        func handleSelectionChanged(itemID: UUID?) {
+            selectedItemID = itemID
         }
     }
 }

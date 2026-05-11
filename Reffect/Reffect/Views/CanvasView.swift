@@ -6,8 +6,9 @@
 import SwiftUI
 
 struct CanvasView: View {
-    let board: Board
     @Environment(AppStore.self) private var store
+    @Environment(\.dismiss) private var dismiss
+    let board: Board
     @State private var isImporting = false
     @State private var importResult: ImportResult?
     @State private var selectedItemID: UUID?
@@ -16,78 +17,115 @@ struct CanvasView: View {
         store.boards.first(where: { $0.id == board.id }) ?? board
     }
 
+    private var selectedItem: BoardItem? {
+        guard let id = selectedItemID else { return nil }
+        return liveBoard.items.first(where: { $0.id == id })
+    }
+
     var body: some View {
-        BoardCanvas(
-            board: liveBoard,
-            onViewportChange: { translateX, translateY, scale in
-                store.updateViewport(
-                    id: board.id,
-                    translateX: translateX,
-                    translateY: translateY,
-                    scale: scale
-                )
-            },
-            onItemPositionChanged: { itemID, x, y in
-                store.updateItemPosition(
-                    boardId: board.id,
-                    itemId: itemID,
-                    x: x,
-                    y: y
-                )
-            },
-            onItemSizeChanged: { itemID, width, height, x, y in
-                store.updateItemSize(
-                    boardId: board.id,
-                    itemId: itemID,
-                    width: width,
-                    height: height,
-                    x: x,
-                    y: y
-                )
-            }
-        )
-        .navigationTitle(liveBoard.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isImporting = true
-                } label: {
-                    Image(systemName: "photo.badge.plus")
+        ZStack {
+            BoardCanvas(
+                board: liveBoard,
+                selectedItemID: $selectedItemID,
+                onViewportChange: { translateX, translateY, scale in
+                    store.updateViewport(
+                        id: board.id,
+                        translateX: translateX,
+                        translateY: translateY,
+                        scale: scale
+                    )
+                },
+                onItemPositionChanged: { itemID, x, y in
+                    store.updateItemPosition(
+                        boardId: board.id,
+                        itemId: itemID,
+                        x: x,
+                        y: y
+                    )
+                },
+                onItemSizeChanged: { itemID, width, height, x, y in
+                    store.updateItemSize(
+                        boardId: board.id,
+                        itemId: itemID,
+                        width: width,
+                        height: height,
+                        x: x,
+                        y: y
+                    )
                 }
-            }
+            )
+            .ignoresSafeArea()
 
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
+            VStack {
+                HStack {
                     Button {
-                        if let itemID = selectedItemID {
-                            store.duplicateItem(boardId: board.id, itemId: itemID)
-                        }
+                        dismiss()
                     } label: {
-                        Label("Duplicate", systemImage: "doc.on.doc")
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 40, height: 40)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Circle())
                     }
-                    .disabled(selectedItemID == nil)
 
-                    Button(role: .destructive) {
-                        if let itemID = selectedItemID {
-                            store.deleteItem(boardId: board.id, itemId: itemID)
-                            selectedItemID = nil
-                        }
+                    Spacer()
+
+                    Button {
+                        isImporting = true
                     } label: {
-                        Label("Delete", systemImage: "trash")
+                        Image(systemName: "plus")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 40, height: 40)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Circle())
                     }
-                    .disabled(selectedItemID == nil)
-                } label: {
-                    Image(systemName: "ellipsis.circle")
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                Spacer()
+
+                if selectedItemID != nil {
+                    ImageToolbar(
+                        item: selectedItem,
+                        onFlip: {
+                            if let id = selectedItemID {
+                                store.toggleItemFlip(boardId: board.id, itemId: id)
+                            }
+                        },
+                        onToggleBW: {
+                            if let id = selectedItemID {
+                                store.toggleItemBlackAndWhite(boardId: board.id, itemId: id)
+                            }
+                        },
+                        onDuplicate: {
+                            if let id = selectedItemID {
+                                store.duplicateItem(boardId: board.id, itemId: id)
+                            }
+                        },
+                        onDelete: {
+                            if let id = selectedItemID {
+                                store.deleteItem(boardId: board.id, itemId: id)
+                                selectedItemID = nil
+                            }
+                        }
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.spring(response: 0.35, dampingFraction: 0.8), value: selectedItemID)
+                    .padding(.bottom, 24)
                 }
             }
         }
+        .navigationBarHidden(true)
+        .statusBar(hidden: true)
         .sheet(isPresented: $isImporting) {
             ImageImporter { result in
                 isImporting = false
                 importResult = result
                 for filename in result.filenames {
-                    store.addImage(to: board.id, filename: filename)
+                    _ = store.addImage(to: board.id, filename: filename)
                 }
             }
         }
