@@ -11,6 +11,10 @@ final class BoardCanvasView: UIScrollView {
 
     private let contentContainerView = UIView()
     private var didSetInitialOffset = false
+    private var isRestoringViewport = false
+
+    var onViewportChange: ((CGPoint, CGFloat) -> Void)?
+    var initialViewport: (translateX: Double, translateY: Double, scale: Double)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -70,9 +74,17 @@ final class BoardCanvasView: UIScrollView {
 
         guard bounds.width > 0, bounds.height > 0, !didSetInitialOffset else { return }
 
-        let offsetX = (Self.canvasSize - bounds.width) / 2
-        let offsetY = (Self.canvasSize - bounds.height) / 2
-        contentOffset = CGPoint(x: max(0, offsetX), y: max(0, offsetY))
+        isRestoringViewport = true
+        defer { isRestoringViewport = false }
+
+        if let viewport = initialViewport {
+            zoomScale = CGFloat(viewport.scale)
+            contentOffset = CGPoint(x: CGFloat(viewport.translateX), y: CGFloat(viewport.translateY))
+        } else {
+            let offsetX = (Self.canvasSize - bounds.width) / 2
+            let offsetY = (Self.canvasSize - bounds.height) / 2
+            contentOffset = CGPoint(x: max(0, offsetX), y: max(0, offsetY))
+        }
         didSetInitialOffset = true
     }
 }
@@ -80,5 +92,19 @@ final class BoardCanvasView: UIScrollView {
 extension BoardCanvasView: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         contentContainerView
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard !isRestoringViewport else { return }
+        notifyViewportChange()
+    }
+
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        guard !isRestoringViewport else { return }
+        notifyViewportChange()
+    }
+
+    private func notifyViewportChange() {
+        onViewportChange?(contentOffset, zoomScale)
     }
 }

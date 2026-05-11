@@ -26,7 +26,7 @@ A living document. Tick off steps as they are completed.
   - `BoardCanvas` (UIViewRepresentable), `BoardCanvasView` (UIScrollView). 7000×7000 content view, centered origin. Pinch zoom + pan.
   - *Test:* Tap a board → canvas opens. Can pinch zoom and pan freely
 
-- [ ] **Step 5 — Viewport Persistence**
+- [x] **Step 5 — Viewport Persistence**
   - Save/restore `contentOffset` and `zoomScale` per board. Debounced writes.
   - *Test:* Pan/zoom canvas, go back to list, reopen board — viewport restores exactly
 

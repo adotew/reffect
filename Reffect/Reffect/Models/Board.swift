@@ -26,3 +26,12 @@ struct Board: Codable, Identifiable, Hashable {
         self.viewportScale = viewportScale
     }
 }
+
+extension Board {
+    var savedViewport: (translateX: Double, translateY: Double, scale: Double)? {
+        guard let x = viewportTranslateX, let y = viewportTranslateY, let s = viewportScale else {
+            return nil
+        }
+        return (x, y, s)
+    }
+}

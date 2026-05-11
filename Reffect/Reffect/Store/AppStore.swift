@@ -42,6 +42,16 @@ class AppStore {
         }
     }
 
+    func updateViewport(id: UUID, translateX: Double, translateY: Double, scale: Double) {
+        if let index = boards.firstIndex(where: { $0.id == id }) {
+            boards[index].viewportTranslateX = translateX
+            boards[index].viewportTranslateY = translateY
+            boards[index].viewportScale = scale
+            boards[index].lastModified = Date()
+            saveBoards()
+        }
+    }
+
     private func saveBoards() {
         Task {
             try? await persistence.saveBoards(boards)
