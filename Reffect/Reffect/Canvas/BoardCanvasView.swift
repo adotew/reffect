@@ -28,8 +28,6 @@ final class BoardCanvasView: UIScrollView {
     }
 
     private func setupCanvas() {
-        backgroundColor = .systemBackground
-
         showsVerticalScrollIndicator = false
         showsHorizontalScrollIndicator = false
         bounces = true
@@ -48,9 +46,6 @@ final class BoardCanvasView: UIScrollView {
             height: Self.canvasSize
         )
         addSubview(contentContainerView)
-
-        let patternImage = createGridPatternImage()
-        contentContainerView.backgroundColor = UIColor(patternImage: patternImage)
     }
 
     func setItems(_ items: [BoardItem]) {
@@ -69,23 +64,6 @@ final class BoardCanvasView: UIScrollView {
         }
 
         currentItems = items
-    }
-
-    private func createGridPatternImage() -> UIImage {
-        let spacing: CGFloat = 50
-        let size = CGSize(width: spacing, height: spacing)
-        let renderer = UIGraphicsImageRenderer(size: size)
-        return renderer.image { context in
-            let dotRadius: CGFloat = 1.5
-            let rect = CGRect(
-                x: spacing / 2 - dotRadius,
-                y: spacing / 2 - dotRadius,
-                width: dotRadius * 2,
-                height: dotRadius * 2
-            )
-            UIColor.systemGray3.setFill()
-            context.cgContext.fillEllipse(in: rect)
-        }
     }
 
     override func layoutSubviews() {
