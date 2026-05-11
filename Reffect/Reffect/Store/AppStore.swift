@@ -45,8 +45,10 @@ class AppStore {
     func addImage(to boardId: UUID, filename: String) -> BoardItem {
         let item = BoardItem(imageSource: filename)
         if let index = boards.firstIndex(where: { $0.id == boardId }) {
-            boards[index].items.append(item)
-            boards[index].lastModified = Date()
+            var board = boards[index]
+            board.items.append(item)
+            board.lastModified = Date()
+            boards[index] = board
             saveBoards()
         }
         return item

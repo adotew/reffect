@@ -42,6 +42,9 @@ struct CanvasView: View {
             ImageImporter { result in
                 isImporting = false
                 importResult = result
+                for filename in result.filenames {
+                    store.addImage(to: board.id, filename: filename)
+                }
             }
         }
         .alert(item: $importResult) { result in

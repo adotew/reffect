@@ -9,9 +9,11 @@ import UniformTypeIdentifiers
 
 struct ImportResult: Identifiable {
     let id = UUID()
-    let successful: Int
+    let filenames: [String]
     let failed: Int
     let total: Int
+
+    var successful: Int { filenames.count }
 }
 
 struct ImageImporter: UIViewControllerRepresentable {
@@ -88,7 +90,7 @@ struct ImageImporter: UIViewControllerRepresentable {
             }
 
             return ImportResult(
-                successful: successfulFilenames.count,
+                filenames: successfulFilenames,
                 failed: failedCount,
                 total: results.count
             )
