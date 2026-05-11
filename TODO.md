@@ -54,7 +54,7 @@ A living document. Tick off steps as they are completed.
   - Pan `ItemView` to move. Toolbar "..." menu → Delete and Duplicate actions.
   - *Test:* Drag image to new position. Delete via menu → gone. Duplicate → copy appears offset
 
-- [ ] **Step 10 — Resize**
+- [x] **Step 10 — Resize**
   - `HandleView` corners. Pan handle = resize, aspect-locked, rotation-aware. Handle size scales inversely with zoom.
   - *Test:* Drag corner handle → image resizes, aspect ratio preserved
 

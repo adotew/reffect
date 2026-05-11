@@ -9,6 +9,7 @@ struct BoardCanvas: UIViewRepresentable {
     let board: Board
     let onViewportChange: (Double, Double, Double) -> Void
     let onItemPositionChanged: (UUID, Double, Double) -> Void
+    let onItemSizeChanged: (UUID, Double, Double, Double, Double) -> Void
 
     func makeUIView(context: Context) -> BoardCanvasContainer {
         let container = BoardCanvasContainer()
@@ -25,6 +26,9 @@ struct BoardCanvas: UIViewRepresentable {
         scrollView.onItemPositionChanged = { itemID, x, y in
             context.coordinator.handleItemPositionChanged(itemID: itemID, x: x, y: y)
         }
+        scrollView.onItemSizeChanged = { itemID, width, height, x, y in
+            context.coordinator.handleItemSizeChanged(itemID: itemID, width: width, height: height, x: x, y: y)
+        }
         scrollView.setItems(board.items)
 
         return container
@@ -35,21 +39,28 @@ struct BoardCanvas: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onViewportChange: onViewportChange, onItemPositionChanged: onItemPositionChanged)
+        Coordinator(
+            onViewportChange: onViewportChange,
+            onItemPositionChanged: onItemPositionChanged,
+            onItemSizeChanged: onItemSizeChanged
+        )
     }
 
     class Coordinator {
         private let onViewportChange: (Double, Double, Double) -> Void
         private let onItemPositionChanged: (UUID, Double, Double) -> Void
+        private let onItemSizeChanged: (UUID, Double, Double, Double, Double) -> Void
         private var debounceWorkItem: DispatchWorkItem?
         private let debounceInterval: TimeInterval = 0.8
 
         init(
             onViewportChange: @escaping (Double, Double, Double) -> Void,
-            onItemPositionChanged: @escaping (UUID, Double, Double) -> Void
+            onItemPositionChanged: @escaping (UUID, Double, Double) -> Void,
+            onItemSizeChanged: @escaping (UUID, Double, Double, Double, Double) -> Void
         ) {
             self.onViewportChange = onViewportChange
             self.onItemPositionChanged = onItemPositionChanged
+            self.onItemSizeChanged = onItemSizeChanged
         }
 
         func scheduleViewportUpdate(translateX: Double, translateY: Double, scale: Double) {
@@ -63,6 +74,10 @@ struct BoardCanvas: UIViewRepresentable {
 
         func handleItemPositionChanged(itemID: UUID, x: Double, y: Double) {
             onItemPositionChanged(itemID, x, y)
+        }
+
+        func handleItemSizeChanged(itemID: UUID, width: Double, height: Double, x: Double, y: Double) {
+            onItemSizeChanged(itemID, width, height, x, y)
         }
     }
 }

@@ -34,6 +34,16 @@ struct CanvasView: View {
                     x: x,
                     y: y
                 )
+            },
+            onItemSizeChanged: { itemID, width, height, x, y in
+                store.updateItemSize(
+                    boardId: board.id,
+                    itemId: itemID,
+                    width: width,
+                    height: height,
+                    x: x,
+                    y: y
+                )
             }
         )
         .navigationTitle(liveBoard.name)

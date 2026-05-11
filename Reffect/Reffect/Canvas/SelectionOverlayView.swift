@@ -6,7 +6,12 @@
 import UIKit
 
 final class SelectionOverlayView: UIView {
+    enum HandlePosition: Int {
+        case topLeft, topRight, bottomLeft, bottomRight
+    }
+
     private let borderLayer = CALayer()
+    var onHandlePan: ((HandlePosition, UIPanGestureRecognizer) -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -19,7 +24,7 @@ final class SelectionOverlayView: UIView {
     }
 
     private func setup() {
-        isUserInteractionEnabled = false
+        isUserInteractionEnabled = true
         clipsToBounds = false
 
         borderLayer.borderColor = UIColor.systemBlue.cgColor
@@ -27,17 +32,26 @@ final class SelectionOverlayView: UIView {
         layer.addSublayer(borderLayer)
 
         let handleSize = HandleView.defaultSize
-        let positions: [CGPoint] = [
-            CGPoint(x: -handleSize / 2, y: -handleSize / 2),
-            CGPoint(x: bounds.width - handleSize / 2, y: -handleSize / 2),
-            CGPoint(x: -handleSize / 2, y: bounds.height - handleSize / 2),
-            CGPoint(x: bounds.width - handleSize / 2, y: bounds.height - handleSize / 2)
+        let positions: [(HandlePosition, CGPoint)] = [
+            (.topLeft, CGPoint(x: -handleSize / 2, y: -handleSize / 2)),
+            (.topRight, CGPoint(x: bounds.width - handleSize / 2, y: -handleSize / 2)),
+            (.bottomLeft, CGPoint(x: -handleSize / 2, y: bounds.height - handleSize / 2)),
+            (.bottomRight, CGPoint(x: bounds.width - handleSize / 2, y: bounds.height - handleSize / 2))
         ]
 
-        for position in positions {
-            let handle = HandleView(frame: CGRect(origin: position, size: CGSize(width: handleSize, height: handleSize)))
+        for (position, origin) in positions {
+            let handle = HandleView(frame: CGRect(origin: origin, size: CGSize(width: handleSize, height: handleSize)))
+            handle.tag = position.rawValue
+            let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+            handle.addGestureRecognizer(pan)
             addSubview(handle)
         }
+    }
+
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        guard let handle = gesture.view as? HandleView,
+              let position = HandlePosition(rawValue: handle.tag) else { return }
+        onHandlePan?(position, gesture)
     }
 
     override func layoutSubviews() {

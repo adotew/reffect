@@ -104,6 +104,21 @@ class AppStore {
         }
     }
 
+    func updateItemSize(boardId: UUID, itemId: UUID, width: Double, height: Double, x: Double, y: Double) {
+        if let boardIndex = boards.firstIndex(where: { $0.id == boardId }) {
+            var board = boards[boardIndex]
+            if let itemIndex = board.items.firstIndex(where: { $0.id == itemId }) {
+                board.items[itemIndex].width = width
+                board.items[itemIndex].height = height
+                board.items[itemIndex].x = x
+                board.items[itemIndex].y = y
+                board.lastModified = Date()
+                boards[boardIndex] = board
+                saveBoards()
+            }
+        }
+    }
+
     func updateViewport(id: UUID, translateX: Double, translateY: Double, scale: Double) {
         if let index = boards.firstIndex(where: { $0.id == id }) {
             boards[index].viewportTranslateX = translateX
