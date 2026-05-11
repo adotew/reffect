@@ -34,7 +34,7 @@ A living document. Tick off steps as they are completed.
 
 ## Phase 3: Images
 
-- [ ] **Step 6 — Image Import**
+- [x] **Step 6 — Image Import**
   - `PHPickerViewController` wrapper. ImageIO downsampling to ~1500px. Save JPEG.
   - *Test:* Import an image → file appears in app documents directory, ≤1500px
 

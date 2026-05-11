@@ -42,6 +42,16 @@ class AppStore {
         }
     }
 
+    func addImage(to boardId: UUID, filename: String) -> BoardItem {
+        let item = BoardItem(imageSource: filename)
+        if let index = boards.firstIndex(where: { $0.id == boardId }) {
+            boards[index].items.append(item)
+            boards[index].lastModified = Date()
+            saveBoards()
+        }
+        return item
+    }
+
     func updateViewport(id: UUID, translateX: Double, translateY: Double, scale: Double) {
         if let index = boards.firstIndex(where: { $0.id == id }) {
             boards[index].viewportTranslateX = translateX

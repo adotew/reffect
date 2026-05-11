@@ -32,7 +32,7 @@ actor PersistenceManager {
 
     private init() {}
 
-    func ensureImagesDirectoryExists() throws {
+    nonisolated func ensureImagesDirectoryExists() throws {
         let fm = FileManager.default
         if !fm.fileExists(atPath: imagesDirectoryURL.path) {
             do {
