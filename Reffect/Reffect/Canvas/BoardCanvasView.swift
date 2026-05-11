@@ -17,6 +17,13 @@ final class BoardCanvasView: UIScrollView {
     var onViewportChange: ((CGPoint, CGFloat) -> Void)?
     var initialViewport: (translateX: Double, translateY: Double, scale: Double)?
 
+    var selectedItemID: UUID? {
+        didSet {
+            guard selectedItemID != oldValue else { return }
+            updateSelectionState()
+        }
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCanvas()
@@ -46,6 +53,10 @@ final class BoardCanvasView: UIScrollView {
             height: Self.canvasSize
         )
         addSubview(contentContainerView)
+
+        let deselectTap = UITapGestureRecognizer(target: self, action: #selector(handleCanvasTap))
+        deselectTap.delegate = self
+        contentContainerView.addGestureRecognizer(deselectTap)
     }
 
     func setItems(_ items: [BoardItem]) {
@@ -60,10 +71,25 @@ final class BoardCanvasView: UIScrollView {
 
         for item in items {
             let itemView = ItemView(item: item)
+            itemView.onSelect = { [weak self] in
+                self?.selectedItemID = item.id
+            }
             contentContainerView.addSubview(itemView)
         }
 
         currentItems = items
+        updateSelectionState()
+    }
+
+    private func updateSelectionState() {
+        for subview in contentContainerView.subviews {
+            guard let itemView = subview as? ItemView else { continue }
+            itemView.isSelected = (itemView.item.id == selectedItemID)
+        }
+    }
+
+    @objc private func handleCanvasTap() {
+        selectedItemID = nil
     }
 
     override func layoutSubviews() {
@@ -103,5 +129,18 @@ extension BoardCanvasView: UIScrollViewDelegate {
 
     private func notifyViewportChange() {
         onViewportChange?(contentOffset, zoomScale)
+    }
+}
+
+extension BoardCanvasView: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        var view = touch.view
+        while view != nil {
+            if view is ItemView {
+                return false
+            }
+            view = view?.superview
+        }
+        return true
     }
 }

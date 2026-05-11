@@ -46,7 +46,7 @@ A living document. Tick off steps as they are completed.
 
 ## Phase 4: Interactions
 
-- [ ] **Step 8 — Selection**
+- [x] **Step 8 — Selection**
   - Tap `ItemView` to select (blue border + 4 handles). Tap canvas to deselect. Bring to front.
   - *Test:* Tap image → blue border + handles appear. Tap empty canvas → deselects
 

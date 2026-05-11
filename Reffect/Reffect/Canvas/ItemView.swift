@@ -8,6 +8,21 @@ import UIKit
 final class ItemView: UIView {
     let item: BoardItem
     private let imageView = UIImageView()
+    private var selectionOverlay: SelectionOverlayView?
+
+    var onSelect: (() -> Void)?
+
+    var isSelected: Bool = false {
+        didSet {
+            guard isSelected != oldValue else { return }
+            if isSelected {
+                showSelectionOverlay()
+                superview?.bringSubviewToFront(self)
+            } else {
+                hideSelectionOverlay()
+            }
+        }
+    }
 
     init(item: BoardItem) {
         self.item = item
@@ -21,6 +36,7 @@ final class ItemView: UIView {
 
     private func setup() {
         backgroundColor = .clear
+        clipsToBounds = false
 
         let size = CGSize(width: item.width, height: item.height)
         bounds.size = size
@@ -41,6 +57,9 @@ final class ItemView: UIView {
         layer.shadowRadius = 4
 
         loadImage()
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        addGestureRecognizer(tap)
     }
 
     private func loadImage() {
@@ -50,5 +69,22 @@ final class ItemView: UIView {
         } else {
             imageView.backgroundColor = .systemGray5
         }
+    }
+
+    @objc private func handleTap() {
+        onSelect?()
+    }
+
+    private func showSelectionOverlay() {
+        guard selectionOverlay == nil else { return }
+        let overlay = SelectionOverlayView(frame: bounds)
+        overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(overlay)
+        selectionOverlay = overlay
+    }
+
+    private func hideSelectionOverlay() {
+        selectionOverlay?.removeFromSuperview()
+        selectionOverlay = nil
     }
 }
