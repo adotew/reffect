@@ -22,11 +22,11 @@ final class BoardCanvasContainer: UIView {
     private func setup() {
         backgroundColor = .systemBackground
 
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(scrollView)
-
         gridView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(gridView)
+
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(scrollView)
 
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: topAnchor),
