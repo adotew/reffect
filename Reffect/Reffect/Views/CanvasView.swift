@@ -9,6 +9,7 @@ struct CanvasView: View {
     let board: Board
     @Environment(AppStore.self) private var store
     @State private var isImporting = false
+    @State private var importResult: ImportResult?
 
     var body: some View {
         BoardCanvas(
@@ -34,10 +35,24 @@ struct CanvasView: View {
             }
         }
         .sheet(isPresented: $isImporting) {
-            ImageImporter { filenames in
-                for filename in filenames {
-                    store.addImage(to: board.id, filename: filename)
-                }
+            ImageImporter { result in
+                isImporting = false
+                importResult = result
+            }
+        }
+        .alert(item: $importResult) { result in
+            if result.failed > 0 {
+                return Alert(
+                    title: Text("Import Complete"),
+                    message: Text("\(result.successful) of \(result.total) images imported. \(result.failed) failed."),
+                    dismissButton: .default(Text("OK"))
+                )
+            } else {
+                return Alert(
+                    title: Text("Import Complete"),
+                    message: Text("\(result.successful) images imported successfully."),
+                    dismissButton: .default(Text("OK"))
+                )
             }
         }
     }
