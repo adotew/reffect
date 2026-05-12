@@ -60,10 +60,10 @@ final class ItemView: UIView {
         if frameChanged {
             let size = CGSize(width: item.width, height: item.height)
             bounds.size = size
-            center = CGPoint(
-                x: BoardCanvasView.canvasHalf + item.x,
-                y: BoardCanvasView.canvasHalf + item.y
-            )
+            center = clampedCenter(CGPoint(
+                x: BoardCanvasView.canvasHalfX + item.x,
+                y: BoardCanvasView.canvasHalfY + item.y
+            ))
             imageView.frame = bounds
             selectionOverlay?.frame = imageRect
         }
@@ -82,10 +82,10 @@ final class ItemView: UIView {
 
         let size = CGSize(width: item.width, height: item.height)
         bounds.size = size
-        center = CGPoint(
-            x: BoardCanvasView.canvasHalf + item.x,
-            y: BoardCanvasView.canvasHalf + item.y
-        )
+        center = clampedCenter(CGPoint(
+            x: BoardCanvasView.canvasHalfX + item.x,
+            y: BoardCanvasView.canvasHalfY + item.y
+        ))
 
         imageView.frame = bounds
         imageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -143,19 +143,30 @@ final class ItemView: UIView {
         }
     }
 
+    private func clampedCenter(_ proposedCenter: CGPoint) -> CGPoint {
+        let halfW = bounds.width / 2
+        let halfH = bounds.height / 2
+        return CGPoint(
+            x: max(halfW, min(BoardCanvasView.canvasWidth - halfW, proposedCenter.x)),
+            y: max(halfH, min(BoardCanvasView.canvasHeight - halfH, proposedCenter.y))
+        )
+    }
+
     @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
         switch gesture.state {
         case .began:
             panStartCenter = center
         case .changed:
             let translation = gesture.translation(in: superview)
-            center = CGPoint(
+            let proposedCenter = CGPoint(
                 x: panStartCenter.x + translation.x,
                 y: panStartCenter.y + translation.y
             )
+            center = clampedCenter(proposedCenter)
         case .ended, .cancelled:
-            let newX = Double(center.x - BoardCanvasView.canvasHalf)
-            let newY = Double(center.y - BoardCanvasView.canvasHalf)
+            center = clampedCenter(center)
+            let newX = Double(center.x - BoardCanvasView.canvasHalfX)
+            let newY = Double(center.y - BoardCanvasView.canvasHalfY)
             onPositionChanged?(newX, newY)
         default:
             break
@@ -210,6 +221,31 @@ final class ItemView: UIView {
         }
     }
 
+    private func maxResizeScale(for position: SelectionOverlayView.HandlePosition, anchor: CGPoint, originalSize: CGSize) -> CGFloat {
+        switch position {
+        case .bottomRight:
+            return min(
+                (BoardCanvasView.canvasWidth - anchor.x) / originalSize.width,
+                (BoardCanvasView.canvasHeight - anchor.y) / originalSize.height
+            )
+        case .bottomLeft:
+            return min(
+                anchor.x / originalSize.width,
+                (BoardCanvasView.canvasHeight - anchor.y) / originalSize.height
+            )
+        case .topRight:
+            return min(
+                (BoardCanvasView.canvasWidth - anchor.x) / originalSize.width,
+                anchor.y / originalSize.height
+            )
+        case .topLeft:
+            return min(
+                anchor.x / originalSize.width,
+                anchor.y / originalSize.height
+            )
+        }
+    }
+
     private func handleResize(from position: SelectionOverlayView.HandlePosition, gesture: UIPanGestureRecognizer) {
         switch gesture.state {
         case .began:
@@ -226,7 +262,9 @@ final class ItemView: UIView {
             let vector = CGPoint(x: fingerLocation.x - resizeAnchor.x, y: fingerLocation.y - resizeAnchor.y)
             let currentDistance = hypot(vector.x, vector.y)
             guard resizeStartDistance > 0 else { return }
-            let scale = currentDistance / resizeStartDistance
+            var scale = currentDistance / resizeStartDistance
+            let maxScale = maxResizeScale(for: position, anchor: resizeAnchor, originalSize: resizeOriginalSize)
+            scale = min(scale, max(0, maxScale))
             let newWidth = max(50, resizeOriginalSize.width * scale)
             let newHeight = max(50, resizeOriginalSize.height * scale)
 
@@ -234,10 +272,10 @@ final class ItemView: UIView {
             let signY: CGFloat = (position == .topLeft || position == .topRight) ? -1 : 1
 
             bounds.size = CGSize(width: newWidth, height: newHeight)
-            center = CGPoint(
+            center = clampedCenter(CGPoint(
                 x: resizeAnchor.x + signX * newWidth / 2,
                 y: resizeAnchor.y + signY * newHeight / 2
-            )
+            ))
 
             imageView.frame = bounds
 
@@ -247,8 +285,8 @@ final class ItemView: UIView {
             selectionOverlay?.layoutIfNeeded()
             CATransaction.commit()
         case .ended, .cancelled:
-            let newX = Double(center.x - BoardCanvasView.canvasHalf)
-            let newY = Double(center.y - BoardCanvasView.canvasHalf)
+            let newX = Double(center.x - BoardCanvasView.canvasHalfX)
+            let newY = Double(center.y - BoardCanvasView.canvasHalfY)
             let newWidth = Double(bounds.width)
             let newHeight = Double(bounds.height)
             onSizeChanged?(newWidth, newHeight, newX, newY)

@@ -6,8 +6,10 @@
 import UIKit
 
 final class BoardCanvasView: UIScrollView {
-    static let canvasSize: CGFloat = 7000
-    static let canvasHalf: CGFloat = 3500
+    static let canvasWidth: CGFloat = 2732
+    static let canvasHeight: CGFloat = 2048
+    static let canvasHalfX: CGFloat = canvasWidth / 2
+    static let canvasHalfY: CGFloat = canvasHeight / 2
 
     private let contentContainerView = UIView()
     private var didSetInitialOffset = false
@@ -43,17 +45,17 @@ final class BoardCanvasView: UIScrollView {
         bounces = true
         alwaysBounceVertical = true
         alwaysBounceHorizontal = true
-        minimumZoomScale = 0.1
+        contentInsetAdjustmentBehavior = .never
         maximumZoomScale = 5.0
         delegate = self
 
-        contentSize = CGSize(width: Self.canvasSize, height: Self.canvasSize)
+        contentSize = CGSize(width: Self.canvasWidth, height: Self.canvasHeight)
 
         contentContainerView.frame = CGRect(
             x: 0,
             y: 0,
-            width: Self.canvasSize,
-            height: Self.canvasSize
+            width: Self.canvasWidth,
+            height: Self.canvasHeight
         )
         addSubview(contentContainerView)
 
@@ -142,20 +144,54 @@ final class BoardCanvasView: UIScrollView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        guard bounds.width > 0, bounds.height > 0, !didSetInitialOffset else { return }
+        guard bounds.width > 0, bounds.height > 0 else { return }
+
+        let minScale = min(
+            bounds.width / contentSize.width,
+            bounds.height / contentSize.height
+        )
+        minimumZoomScale = minScale
+
+        guard !didSetInitialOffset else {
+            updateContentInset()
+            return
+        }
 
         isRestoringViewport = true
         defer { isRestoringViewport = false }
 
         if let viewport = initialViewport {
             zoomScale = CGFloat(viewport.scale)
-            contentOffset = CGPoint(x: CGFloat(viewport.translateX), y: CGFloat(viewport.translateY))
+            contentOffset = CGPoint(
+                x: CGFloat(viewport.translateX), y: CGFloat(viewport.translateY))
         } else {
-            let offsetX = (Self.canvasSize - bounds.width) / 2
-            let offsetY = (Self.canvasSize - bounds.height) / 2
+            let offsetX = (Self.canvasWidth - bounds.width) / 2
+            let offsetY = (Self.canvasHeight - bounds.height) / 2
             contentOffset = CGPoint(x: max(0, offsetX), y: max(0, offsetY))
         }
         didSetInitialOffset = true
+        updateContentInset()
+    }
+
+    private func updateContentInset() {
+        let boundsSize = bounds.size
+        let contentFrame = contentContainerView.frame
+
+        var inset = UIEdgeInsets.zero
+
+        let deltaX = boundsSize.width - contentFrame.size.width
+        if deltaX > 0.5 {
+            inset.left = deltaX / 2
+            inset.right = deltaX / 2
+        }
+
+        let deltaY = boundsSize.height - contentFrame.size.height
+        if deltaY > 0.5 {
+            inset.top = deltaY / 2
+            inset.bottom = deltaY / 2
+        }
+
+        contentInset = inset
     }
 }
 
@@ -171,6 +207,7 @@ extension BoardCanvasView: UIScrollViewDelegate {
 
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         guard !isRestoringViewport else { return }
+        updateContentInset()
         notifyViewportChange()
     }
 
