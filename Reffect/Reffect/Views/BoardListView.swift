@@ -53,29 +53,22 @@ struct BoardListView: View {
             .navigationDestination(for: Board.self) { board in
                 CanvasView(board: board)
             }
-            .sheet(item: $boardToRename) { board in
-                NavigationStack {
-                    Form {
-                        Section {
-                            TextField("Board name", text: $renameText)
-                        }
-                    }
-                    .navigationTitle("Rename Board")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                boardToRename = nil
-                            }
-                        }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Save") {
-                                store.renameBoard(id: board.id, to: renameText)
-                                boardToRename = nil
-                            }
-                        }
-                    }
+            .alert("Rename Board", isPresented: .init(
+                get: { boardToRename != nil },
+                set: { if !$0 { boardToRename = nil } }
+            )) {
+                TextField("Board name", text: $renameText)
+                Button("Cancel", role: .cancel) {
+                    boardToRename = nil
                 }
+                Button("Save") {
+                    if let board = boardToRename {
+                        store.renameBoard(id: board.id, to: renameText)
+                    }
+                    boardToRename = nil
+                }
+            } message: {
+                Text("Enter a new name for this board.")
             }
         }
     }
