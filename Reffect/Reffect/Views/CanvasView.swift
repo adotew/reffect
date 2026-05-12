@@ -10,7 +10,6 @@ struct CanvasView: View {
     @Environment(\.dismiss) private var dismiss
     let board: Board
     @State private var isImporting = false
-    @State private var importResult: ImportResult?
     @State private var selectedItemID: UUID?
 
     private var liveBoard: Board {
@@ -123,25 +122,9 @@ struct CanvasView: View {
         .sheet(isPresented: $isImporting) {
             ImageImporter { result in
                 isImporting = false
-                importResult = result
                 for filename in result.filenames {
                     _ = store.addImage(to: board.id, filename: filename)
                 }
-            }
-        }
-        .alert(item: $importResult) { result in
-            if result.failed > 0 {
-                return Alert(
-                    title: Text("Import Complete"),
-                    message: Text("\(result.successful) of \(result.total) images imported. \(result.failed) failed."),
-                    dismissButton: .default(Text("OK"))
-                )
-            } else {
-                return Alert(
-                    title: Text("Import Complete"),
-                    message: Text("\(result.successful) images imported successfully."),
-                    dismissButton: .default(Text("OK"))
-                )
             }
         }
     }
