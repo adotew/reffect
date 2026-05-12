@@ -6,7 +6,7 @@
 import UIKit
 
 final class GridView: UIView {
-    static let spacing: CGFloat = 50
+    static let spacing: CGFloat = 36
     static let dotRadius: CGFloat = 1.5
 
     override init(frame: CGRect) {
