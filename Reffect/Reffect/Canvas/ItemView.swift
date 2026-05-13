@@ -47,7 +47,11 @@ final class ItemView: UIView {
     func configure(with newItem: BoardItem) {
         let filtersChanged =
             item.isBlackAndWhite != newItem.isBlackAndWhite ||
-            item.flipHorizontal != newItem.flipHorizontal
+            item.flipHorizontal != newItem.flipHorizontal ||
+            item.isBlurred != newItem.isBlurred ||
+            item.blurRadius != newItem.blurRadius ||
+            item.isPosterized != newItem.isPosterized ||
+            item.posterizationLevels != newItem.posterizationLevels
 
         let frameChanged =
             item.x != newItem.x ||
@@ -117,6 +121,7 @@ final class ItemView: UIView {
         }
 
         var ciImage = CIImage(cgImage: cgImage)
+        let sourceExtent = ciImage.extent
 
         if item.isBlackAndWhite {
             if let filter = CIFilter(name: "CIColorControls") {
@@ -124,6 +129,26 @@ final class ItemView: UIView {
                 filter.setValue(0.0, forKey: kCIInputSaturationKey)
                 if let output = filter.outputImage {
                     ciImage = output
+                }
+            }
+        }
+
+        if item.isPosterized {
+            if let filter = CIFilter(name: "CIColorPosterize") {
+                filter.setValue(ciImage, forKey: kCIInputImageKey)
+                filter.setValue(item.posterizationLevels, forKey: "inputLevels")
+                if let output = filter.outputImage {
+                    ciImage = output
+                }
+            }
+        }
+
+        if item.isBlurred {
+            if let filter = CIFilter(name: "CIGaussianBlur") {
+                filter.setValue(ciImage, forKey: kCIInputImageKey)
+                filter.setValue(item.blurRadius, forKey: kCIInputRadiusKey)
+                if let output = filter.outputImage {
+                    ciImage = output.cropped(to: sourceExtent)
                 }
             }
         }

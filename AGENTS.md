@@ -7,11 +7,11 @@ iOS infinite-canvas moodboard app. Xcode project nested at `Reffect/Reffect.xcod
 - **No package managers** — no SPM, CocoaPods, or Carthage dependencies.
 - Build from CLI (example):
   ```bash
-  xcodebuild -project Reffect/Reffect.xcodeproj -scheme Reffect -destination 'platform=iOS Simulator,name=iPhone 16'
+  xcodebuild -project Reffect/Reffect.xcodeproj -scheme Reffect -destination 'platform=iOS Simulator,name=iPhone 17'
   ```
 - Run tests (uses **Swift Testing**, not XCTest):
   ```bash
-  xcodebuild test -project Reffect/Reffect.xcodeproj -scheme Reffect -destination 'platform=iOS Simulator,name=iPhone 16'
+  xcodebuild test -project Reffect/Reffect.xcodeproj -scheme Reffect -destination 'platform=iOS Simulator,name=iPhone 17'
   ```
 - No shared `.xcscheme` files; scheme name matches the target (`Reffect`).
 

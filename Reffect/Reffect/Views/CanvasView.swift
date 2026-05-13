@@ -99,6 +99,26 @@ struct CanvasView: View {
                                 store.toggleItemBlackAndWhite(boardId: board.id, itemId: id)
                             }
                         },
+                        onToggleBlur: {
+                            if let id = selectedItemID {
+                                store.toggleItemBlur(boardId: board.id, itemId: id)
+                            }
+                        },
+                        onSetBlurRadius: { radius in
+                            if let id = selectedItemID {
+                                store.setItemBlurRadius(boardId: board.id, itemId: id, radius: radius)
+                            }
+                        },
+                        onTogglePosterize: {
+                            if let id = selectedItemID {
+                                store.toggleItemPosterize(boardId: board.id, itemId: id)
+                            }
+                        },
+                        onSetPosterizationLevels: { levels in
+                            if let id = selectedItemID {
+                                store.setItemPosterizationLevels(boardId: board.id, itemId: id, levels: levels)
+                            }
+                        },
                         onDuplicate: {
                             if let id = selectedItemID {
                                 store.duplicateItem(boardId: board.id, itemId: id)
