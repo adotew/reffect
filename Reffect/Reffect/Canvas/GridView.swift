@@ -11,38 +11,32 @@ final class GridView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .clear
-        isUserInteractionEnabled = false
+        setup()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        backgroundColor = .clear
+        setup()
+    }
+
+    private func setup() {
+        backgroundColor = UIColor(patternImage: makeTile())
         isUserInteractionEnabled = false
     }
 
-    override func draw(_ rect: CGRect) {
-        guard let context = UIGraphicsGetCurrentContext() else { return }
-
-        UIColor.systemGray3.setFill()
-
-        let startX = floor(rect.minX / Self.spacing) * Self.spacing
-        let startY = floor(rect.minY / Self.spacing) * Self.spacing
-
-        var y = startY
-        while y < rect.maxY {
-            var x = startX
-            while x < rect.maxX {
-                let dotRect = CGRect(
-                    x: x - Self.dotRadius,
-                    y: y - Self.dotRadius,
-                    width: Self.dotRadius * 2,
-                    height: Self.dotRadius * 2
-                )
-                context.fillEllipse(in: dotRect)
-                x += Self.spacing
-            }
-            y += Self.spacing
+    private func makeTile() -> UIImage {
+        let size = CGSize(width: Self.spacing, height: Self.spacing)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { context in
+            UIColor.systemGray3.setFill()
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let dotRect = CGRect(
+                x: center.x - Self.dotRadius,
+                y: center.y - Self.dotRadius,
+                width: Self.dotRadius * 2,
+                height: Self.dotRadius * 2
+            )
+            context.cgContext.fillEllipse(in: dotRect)
         }
     }
 }
