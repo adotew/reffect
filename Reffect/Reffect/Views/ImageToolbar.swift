@@ -209,20 +209,22 @@ private struct EffectButton: View {
     }
 }
 
-#Preview {
-    VStack {
-        Spacer()
-        ImageToolbar(
-            item: BoardItem(imageSource: "test.jpg"),
-            onFlip: {},
-            onToggleBW: {},
-            onToggleBlur: {},
-            onSetBlurRadius: { _ in },
-            onTogglePosterize: {},
-            onSetPosterizationLevels: { _ in },
-            onDuplicate: {},
-            onDelete: {}
-        )
-        .padding(.bottom, 32)
+struct ImageToolbar_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack {
+            Spacer()
+            ImageToolbar(
+                item: BoardItem(imageSource: "test.jpg"),
+                onFlip: {},
+                onToggleBW: {},
+                onToggleBlur: {},
+                onSetBlurRadius: { _ in },
+                onTogglePosterize: {},
+                onSetPosterizationLevels: { _ in },
+                onDuplicate: {},
+                onDelete: {}
+            )
+            .padding(.bottom, 32)
+        }
     }
 }

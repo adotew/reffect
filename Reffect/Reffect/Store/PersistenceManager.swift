@@ -78,7 +78,7 @@ actor PersistenceManager {
         imagesDirectoryURL.appendingPathComponent(filename)
     }
 
-    func deleteImage(filename: String) {
+    nonisolated func deleteImage(filename: String) {
         let url = imageURL(for: filename)
         try? FileManager.default.removeItem(at: url)
     }

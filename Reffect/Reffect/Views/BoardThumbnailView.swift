@@ -53,6 +53,8 @@ struct BoardThumbnailView: View {
     }
 }
 
-#Preview {
-    BoardThumbnailView(board: Board(name: "Moodboard"))
+struct BoardThumbnailView_Previews: PreviewProvider {
+    static var previews: some View {
+        BoardThumbnailView(board: Board(name: "Moodboard"))
+    }
 }

@@ -150,7 +150,9 @@ struct CanvasView: View {
     }
 }
 
-#Preview {
-    CanvasView(board: Board(name: "Test"))
-        .environment(AppStore())
+struct CanvasView_Previews: PreviewProvider {
+    static var previews: some View {
+        CanvasView(board: Board(name: "Test"))
+            .environment(AppStore())
+    }
 }

@@ -79,7 +79,9 @@ struct BoardListView: View {
     }
 }
 
-#Preview {
-    BoardListView()
-        .environment(AppStore())
+struct BoardListView_Previews: PreviewProvider {
+    static var previews: some View {
+        BoardListView()
+            .environment(AppStore())
+    }
 }
