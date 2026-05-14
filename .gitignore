@@ -46,3 +46,6 @@ fastlane/test_output
 # Code Injection
 iOSInjectionProject/
 
+# xcode-build-server
+buildServer.json
+
